@@ -13,6 +13,6 @@ private:
 
 public:
     void add(std::unique_ptr<Aircraft> aircraft);
-
     bool update() override;
+    int countAirline(const std::string& airline);
 };

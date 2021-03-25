@@ -76,6 +76,18 @@ void TowerSimulation::create_keystrokes()
     // Also, it would make no sense to use the framerate to simulate the pause, cause how would we unpause if
     // the program is not running anymore ?
     GL::keystrokes.emplace('p', []() { GL::is_paused = !GL::is_paused; });
+
+    //TASK-2 B-2 
+    for (int i = 0; i <= 7; i++)
+    {
+        GL::keystrokes.emplace(std::to_string(i)[0],
+                               [this, i]()
+                               {
+                                   std::cout << airlines[i]
+                                             << " has : " << manager.countAirline(airlines[i])
+                                             << " airplanes" << std::endl;
+                               });
+    }
 }
 
 void TowerSimulation::display_help() const
@@ -83,9 +95,10 @@ void TowerSimulation::display_help() const
     std::cout << "This is an airport tower simulator" << std::endl
               << "the following keysstrokes have meaning:" << std::endl;
 
-    for (const auto& ks_pair : GL::keystrokes)
+    // TASK-02 utilisation de structured binding
+    for (const auto& [touche, action] : GL::keystrokes)
     {
-        std::cout << ks_pair.first << ' ';
+        std::cout << touche << ' ';
     }
 
     std::cout << std::endl;
