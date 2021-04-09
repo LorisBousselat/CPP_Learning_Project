@@ -13,6 +13,25 @@ WaypointQueue Tower::get_circle() const
              { Point3D { -1.5f, 1.5f, .5f }, wp_air } };
 }
 
+WaypointQueue Tower::reserve_terminal(Aircraft& aircraft)
+{
+    // try and reserve a terminal for the craft to land
+    const auto vp = airport.reserve_terminal(aircraft);
+    if (!vp.first.empty())
+    {
+        reserved_terminals.emplace(&aircraft, vp.second);
+        aircraft.set_circling(false);
+        aircraft.set_has_terminal(true);
+        return vp.first;
+    }
+    else
+    {
+        aircraft.set_circling(true);
+        aircraft.set_has_terminal(false);
+        return {};
+    }
+}
+
 WaypointQueue Tower::get_instructions(Aircraft& aircraft)
 {
     if (!aircraft.is_at_terminal)
@@ -20,20 +39,29 @@ WaypointQueue Tower::get_instructions(Aircraft& aircraft)
         // if the aircraft is far, then just guide it to the airport vicinity
         if (aircraft.distance_to(airport.pos) < 5)
         {
-            // try and reserve a terminal for the craft to land
-            const auto vp = airport.reserve_terminal(aircraft);
-            if (!vp.first.empty())
+            // // try and reserve a terminal for the craft to land
+            // const auto vp = airport.reserve_terminal(aircraft);
+            // if (!vp.first.empty())
+            // {
+            //     reserved_terminals.emplace(&aircraft, vp.second);
+            //     return vp.first;
+            // }
+            // else
+            // {
+            //     aircraft.set_circling(true);
+            //     return get_circle();
+            // }
+            auto tmp = reserve_terminal(aircraft);
+            if(tmp.empty())
             {
-                reserved_terminals.emplace(&aircraft, vp.second);
-                return vp.first;
-            }
-            else
-            {
+                aircraft.set_circling(true);
                 return get_circle();
             }
+            return tmp;
         }
         else
         {
+            aircraft.set_circling(true);
             return get_circle();
         }
     }
@@ -47,6 +75,7 @@ WaypointQueue Tower::get_instructions(Aircraft& aircraft)
         if (!terminal.is_servicing())
         {
             aircraft.is_service_done = true;
+            aircraft.fuel = 3500;
             terminal.finish_service();
             reserved_terminals.erase(it);
             aircraft.is_at_terminal = false;

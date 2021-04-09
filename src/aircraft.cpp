@@ -90,6 +90,19 @@ void Aircraft::add_waypoint(const Waypoint& wp, const bool front)
 
 bool Aircraft::update()
 {
+
+    if (is_circling() || (!has_terminal() && !is_at_terminal && !is_service_done))
+    {
+        auto way = control.reserve_terminal(*this);
+        if(!way.empty())
+        {
+            for(auto w : way)
+            {
+                add_waypoint(w, false);
+            }
+        }
+    }
+
     if (waypoints.empty())
     {
         if (is_service_done)
@@ -105,6 +118,13 @@ bool Aircraft::update()
         turn_to_waypoint();
         // move in the direction of the current speed
         pos += speed;
+
+        if (fuel == 0)
+        {
+            std::cout << "L'avion " << flight_number << " n'a plus d'essence ! Il va se crasher" << std::endl;
+            return false;
+        }
+        fuel--;
 
         // if we are close to our next waypoint, stike if off the list
         if (!waypoints.empty() && distance_to(waypoints.front()) < DISTANCE_THRESHOLD)
