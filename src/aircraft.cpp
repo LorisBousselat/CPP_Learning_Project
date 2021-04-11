@@ -20,6 +20,34 @@ void Aircraft::turn_to_waypoint()
     }
 }
 
+bool Aircraft::is_low_on_fuel() const
+{
+    return fuel < 300;
+}
+
+void Aircraft::refill(unsigned int& fuel_stock)
+{
+    std::cout << flight_number << " fuel state at landing : " << get_fuel() << std::endl;
+
+    if (get_fuel() < 3000)
+    {
+        std::cout << flight_number << " : is getting fuel : ";
+        unsigned int needed = 3000 - get_fuel();
+        if (needed >= fuel_stock)
+        {
+            fuel += fuel_stock;
+            fuel_stock = 0;
+            std::cout << fuel << " which is all the stock" << std::endl;
+        }
+        else
+        {
+            fuel += needed;
+            fuel_stock -= needed;
+            std::cout << needed << " what it need" << std::endl;
+        }
+    }
+}
+
 void Aircraft::turn(Point3D direction)
 {
     (speed += direction.cap_length(type.max_accel)).cap_length(max_speed());
@@ -91,14 +119,22 @@ void Aircraft::add_waypoint(const Waypoint& wp, const bool front)
 bool Aircraft::update()
 {
 
-    if (is_circling() || (!has_terminal() && !is_at_terminal && !is_service_done))
+    if (!has_terminal() && !is_on_ground() && !is_service_done)
     {
-        auto way = control.reserve_terminal(*this);
-        if(!way.empty())
+        WaypointQueue wps = control.reserve_terminal(*this);
+        if (!wps.empty())
         {
-            for(auto w : way)
+            if (!waypoints.empty())
             {
-                add_waypoint(w, false);
+                // j'aurais bien voulut remplacer le conteneur mais je n'ai pas reussis alors je le vide
+                for (auto i = waypoints.size(); i != 0; i--)
+                {
+                    waypoints.pop_back();
+                }
+            }
+            for (const auto& wp : wps)
+            {
+                add_waypoint(wp, false);
             }
         }
     }
@@ -110,7 +146,11 @@ bool Aircraft::update()
             return false;
         }
 
-        waypoints = control.get_instructions(*this);
+        auto front = false;
+        for (const auto& wp : control.get_instructions(*this))
+        {
+            add_waypoint(wp, front);
+        }
     }
 
     if (!is_at_terminal)
@@ -119,18 +159,12 @@ bool Aircraft::update()
         // move in the direction of the current speed
         pos += speed;
 
-        if (fuel == 0)
-        {
-            std::cout << "L'avion " << flight_number << " n'a plus d'essence ! Il va se crasher" << std::endl;
-            return false;
-        }
-        fuel--;
-
         // if we are close to our next waypoint, stike if off the list
         if (!waypoints.empty() && distance_to(waypoints.front()) < DISTANCE_THRESHOLD)
         {
             if (waypoints.front().is_at_terminal())
             {
+                std::cout << get_flight_num() << " is arrived to terminale" << std::endl;
                 arrive_at_terminal();
             }
             else
@@ -150,6 +184,11 @@ bool Aircraft::update()
         }
         else
         {
+            fuel--;
+            if (fuel == 0)
+            {
+                throw AircraftCrash { flight_number + " crashed, out of fuel!" };
+            }
             // if we are in the air, but too slow, then we will sink!
             const float speed_len = speed.length();
             if (speed_len < SPEED_THRESHOLD)

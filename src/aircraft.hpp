@@ -20,10 +20,8 @@ private:
     Tower& control;
     bool landing_gear_deployed = false; // is the landing gear deployed?
     bool is_at_terminal        = false;
-    bool _has_terminal          = false;
-    int fuel = 150 + rand() % (3000-150);
-    // int fuel         = 800;
-    bool _is_circling = false;
+    //int fuel                   = 150 + rand() % (1000 - 150);
+     int fuel         = 200;
 
     // TASK-0 C-3
     // L'endroit le plus approprié pour retirer l'avion, c'est lorsque :
@@ -72,11 +70,25 @@ public:
 
     void display() const override;
     bool update() override;
-    void set_has_terminal(bool val) { _has_terminal = val; }
-    bool has_terminal() const { return _has_terminal; }
-    void set_circling(bool val) { _is_circling = val; }
-    bool is_circling() const { return _is_circling; }
-    int get_fuel() const {return fuel;}
-
+    bool has_terminal() const
+    {
+        if (!waypoints.empty())
+        {
+            return waypoints.back().is_at_terminal();
+        }
+        return false;
+    }
+    bool is_circling() const
+    {
+        if (!waypoints.empty())
+        {
+            return !waypoints.back().is_at_terminal();
+        }
+        return false;
+    }
+    int get_fuel() const { return fuel; }
+    bool is_low_on_fuel() const;
+    void refill(unsigned int& fuel_stock);
+    bool isServiceDone() const { return is_service_done || false; };
     friend class Tower;
 };

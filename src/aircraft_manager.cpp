@@ -41,7 +41,18 @@ bool AircraftManager::update()
 
     // TASK-02 utilisation de remove_if
     aircrafts.erase(std::remove_if(aircrafts.begin(), aircrafts.end(),
-                                   [](const std::unique_ptr<Aircraft>& a) { return !a->update(); }),
+                                   [this](const std::unique_ptr<Aircraft>& a)
+                                   {
+                                       try
+                                       {
+                                           return !a->update();
+                                       } catch (const AircraftCrash& e)
+                                       {
+                                           crash();
+                                           std::cerr << e.what() << std::endl;
+                                           return true;
+                                       }
+                                   }),
                     aircrafts.end());
 
     //*** Affichage de la liste ***
@@ -49,9 +60,9 @@ bool AircraftManager::update()
     // for(auto& a : aircrafts)
     // {
     //     auto term = a->has_terminal() ? "Reserved" : "NotReserved";
-    //     std::cout << term << " / fuel : " << a->get_fuel() <<std::endl;
+    //     std::cout << a->get_flight_num() << " : " << term << " / fuel : " << a->get_fuel() <<std::endl;
     // }
-    // return true;
+    return true;
 }
 
 int AircraftManager::countAirline(const std::string& airline)
@@ -59,4 +70,17 @@ int AircraftManager::countAirline(const std::string& airline)
     return std::count_if(aircrafts.begin(), aircrafts.end(),
                          [&airline](const std::unique_ptr<Aircraft>& a)
                          { return a->get_flight_num().find(airline) != std::string::npos; });
+}
+
+unsigned int AircraftManager::get_required_fuel() const
+{
+    unsigned int total = 0;
+    for(const auto& aircraft : aircrafts)
+    {
+        if(aircraft->is_low_on_fuel() && !aircraft->isServiceDone())
+        {
+            total += 3000 - aircraft->get_fuel();
+        }
+    }
+    return total;
 }

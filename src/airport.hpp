@@ -3,6 +3,7 @@
 #include "GL/displayable.hpp"
 #include "GL/dynamic_object.hpp"
 #include "GL/texture.hpp"
+#include "aircraft_manager.hpp"
 #include "airport_type.hpp"
 #include "geometry.hpp"
 #include "img/image.hpp"
@@ -20,6 +21,10 @@ private:
     const GL::Texture2D texture;
     std::vector<Terminal> terminals;
     Tower tower;
+    unsigned int fuel_stock       = 0;
+    unsigned int ordered_fuel     = 0;
+    unsigned int next_refill_time = 0;
+    const AircraftManager& manager;
 
     // reserve a terminal
     // if a terminal is free, return
@@ -51,13 +56,15 @@ private:
     Terminal& get_terminal(const size_t terminal_num) { return terminals.at(terminal_num); }
 
 public:
-    Airport(const AirportType& type_, const Point3D& pos_, const img::Image* image, const float z_ = 1.0f) :
+    Airport(const AircraftManager& manager_, const AirportType& type_, const Point3D& pos_,
+            const img::Image* image, const float z_ = 1.0f) :
         GL::Displayable { z_ },
         type { type_ },
         pos { pos_ },
         texture { image },
         terminals { type.create_terminals() },
-        tower { *this }
+        tower { *this },
+        manager { manager_ }
     {}
 
     Tower& get_tower() { return tower; }
@@ -66,9 +73,32 @@ public:
 
     bool update() override
     {
+        if (next_refill_time == 0)
+        {
+            fuel_stock += ordered_fuel;
+            ordered_fuel = 0;
+            std::cout << "Airport fuel_stock = " << fuel_stock;
+            unsigned int required = manager.get_required_fuel();
+            std::cout << " Manager is asking for : " << required << " fuel ";
+            if (required > fuel_stock)
+            {
+                ordered_fuel = std::min(required - fuel_stock, 5000U);
+            }
+            std::cout << " So the airport ordered = " << ordered_fuel << " fuel." << std::endl;
+            next_refill_time = 100;
+        }
+        else
+        {
+            next_refill_time--;
+        }
+
         for (auto& t : terminals)
         {
             t.update();
+            if (t.in_use() && t.is_servicing())
+            {
+                t.refill_aircraft_if_needed(fuel_stock);
+            }
         }
 
         return true;

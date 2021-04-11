@@ -87,7 +87,12 @@ private:
         glTexCoord2f((tile_idx + tex_shift.x()) * tile_width, tex_shift.y());
 
         const auto vertex = screen_pos + screen_dim * screen_shift * 0.5f;
-        glVertex2fv(vertex.values);
+        float values[2];
+        for(int i = 0; i<2; i++)
+        {
+            values[i] = vertex.values.at(i);
+        }
+        glVertex2fv(values);
     }
 };
 
