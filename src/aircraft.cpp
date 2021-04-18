@@ -103,8 +103,7 @@ void Aircraft::operate_landing_gear()
         }
     }
 }
-
-void Aircraft::add_waypoint(const Waypoint& wp, const bool front)
+void Aircraft::add_waypoint(const Waypoint& wp, const bool& front)
 {
     if (front)
     {
@@ -119,7 +118,7 @@ void Aircraft::add_waypoint(const Waypoint& wp, const bool front)
 bool Aircraft::update()
 {
 
-    if (!has_terminal() && !is_on_ground() && !is_service_done)
+    if (is_circling())
     {
         WaypointQueue wps = control.reserve_terminal(*this);
         if (!wps.empty())

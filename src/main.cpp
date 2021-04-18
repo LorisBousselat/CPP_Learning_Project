@@ -11,8 +11,9 @@
 //     p1 *= 3;
 //     p3 = p3;
 
-//     Point<2,int> pp {1 ,2, 3};
-//     Point3D ppp{1,2};
+//     //Point<2,int> pp {1 ,2, 3};
+//     //Point3D ppp{1,2};
+//     //Point<6, int> pop {1,2,3,4,5,6};
 // }
 
 // int main()
