@@ -38,6 +38,7 @@ private:
 
         if (it != terminals.end())
         {
+            std::cout<< "un terminale trouvé pour " << aircraft.get_flight_num() << std::endl;
             it->assign_craft(aircraft);
             const auto term_idx = std::distance(terminals.begin(), it);
             return { type.air_to_terminal(pos, 0, term_idx), term_idx };

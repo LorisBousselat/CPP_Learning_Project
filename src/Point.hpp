@@ -14,9 +14,9 @@ public:
     std::array<type, nb_parametre> values;
 
     Point() = default;
-    Point(type x, type y, type z) : values { x, y, z } {}
-    Point(type x, type y) : values { x, y } { assert(nb_parametre == 2); }
-    Point(std::array<type, nb_parametre> v) : values { v } {}
+    Point(type x, type y, type z) : values { x, y, z } { static_assert(nb_parametre == 3); }
+    Point(type x, type y) : values { x, y } { static_assert(nb_parametre == 2); }
+    Point(std::array<type, nb_parametre> v) : values { v } {};
 
     type& x() { return values[0]; }
     type x() const { return values[0]; }
