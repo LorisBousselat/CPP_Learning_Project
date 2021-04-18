@@ -94,7 +94,6 @@ void TowerSimulation::launch()
         display_help();
         return;
     }
-
     factory = new Aircraft_factory();
     init_aircraft_types();
 
