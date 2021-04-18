@@ -20,8 +20,8 @@ private:
     Tower& control;
     bool landing_gear_deployed = false; // is the landing gear deployed?
     bool is_at_terminal        = false;
-    //int fuel                   = 150 + rand() % (1000 - 150);
-     int fuel         = 200;
+    int fuel                   = 150 + rand() % (1000 - 150);
+    //  int fuel         = 200;
 
     // TASK-0 C-3
     // L'endroit le plus approprié pour retirer l'avion, c'est lorsque :

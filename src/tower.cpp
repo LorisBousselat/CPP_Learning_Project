@@ -28,6 +28,19 @@ WaypointQueue Tower::reserve_terminal(Aircraft& aircraft)
     }
 }
 
+void Tower::destroy_aircraft(Aircraft& aircraft)
+{
+    const auto it = reserved_terminals.find(&aircraft);
+    if(it == reserved_terminals.end())
+    {
+        return;
+    }
+    const auto terminal_num = it->second;
+    Terminal& terminal      = airport.get_terminal(terminal_num);
+    terminal.destroy_aircraft();
+    reserved_terminals.erase(it);
+}
+
 WaypointQueue Tower::get_instructions(Aircraft& aircraft)
 {
     if (!aircraft.is_at_terminal)

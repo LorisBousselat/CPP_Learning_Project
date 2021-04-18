@@ -187,6 +187,7 @@ bool Aircraft::update()
             fuel--;
             if (fuel == 0)
             {
+                control.destroy_aircraft(*this);
                 throw AircraftCrash { flight_number + " crashed, out of fuel!" };
             }
             // if we are in the air, but too slow, then we will sink!

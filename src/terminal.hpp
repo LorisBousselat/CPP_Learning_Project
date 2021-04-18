@@ -19,6 +19,10 @@ private:
 public:
     Terminal(const Point3D& pos_) : pos { pos_ } {}
 
+    void destroy_aircraft(){
+        current_aircraft = nullptr;
+    }
+
     bool in_use() const { return current_aircraft != nullptr; }
     bool is_servicing() const { return service_progress < SERVICE_CYCLES; }
     void assign_craft(Aircraft& aircraft) { current_aircraft = &aircraft; }
